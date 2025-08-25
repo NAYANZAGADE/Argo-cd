@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpd-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpd
+  template:
+    metadata:
+      labels:
+        app: httpd
+    spec:
+      containers:
+      - name: httpd
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+             cpu: 100m
+             memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi   
+        volumeMounts:
+        - name: local-pv
+          mountPath: /usr/share/nginx/html   # Nginx default document root
+      volumes:
+      - name: local-pv
+        persistentVolumeClaim:
+          claimName: local-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-service
+  namespace: default
+spec:
+  selector:
+    app: httpd
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+
